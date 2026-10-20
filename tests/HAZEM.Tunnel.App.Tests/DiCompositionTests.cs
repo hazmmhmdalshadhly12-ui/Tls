@@ -193,7 +193,9 @@ public sealed class DiCompositionTests : IClassFixture<DiCompositionTests.Compos
                 ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown
             };
         }
-        var resources = System.Windows.Application.Current.Resources;
+        var app = System.Windows.Application.Current;
+        if (app is null) throw new InvalidOperationException("WPF Application could not be created on the STA thread.");
+        var resources = app.Resources;
         if (resources.MergedDictionaries.Count == 0)
         {
             resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary
