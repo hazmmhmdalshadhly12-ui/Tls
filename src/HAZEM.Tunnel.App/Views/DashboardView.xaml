@@ -1,0 +1,132 @@
+<UserControl x:Class="HAZEM.Tunnel.App.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,24" MaxWidth="980" HorizontalAlignment="Left">
+
+            <TextBlock Text="Dashboard" Style="{StaticResource H1}" />
+            <TextBlock Style="{StaticResource Dim}"
+                       Text="Connect a profile, watch real status. &quot;Connected&quot; appears only after the through-tunnel health check passes." />
+
+            <!-- State card -->
+            <Border Style="{StaticResource Card}" Margin="0,18,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource PillBase}" Padding="14,6" Margin="0,0,14,0"
+                                    Background="{StaticResource PanelAlt}" BorderBrush="{StaticResource Border}" BorderThickness="1">
+                                <TextBlock Text="{Binding StateText}" FontSize="16" FontWeight="SemiBold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{StaticResource FgDim}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding StateColorKey}" Value="Good">
+                                                    <Setter Property="Foreground" Value="{StaticResource Good}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding StateColorKey}" Value="Bad">
+                                                    <Setter Property="Foreground" Value="{StaticResource Bad}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding StateColorKey}" Value="Warn">
+                                                    <Setter Property="Foreground" Value="{StaticResource Warn}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                            <TextBlock Text="{Binding StageText}" Style="{StaticResource Dim}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding LastHealth}" Style="{StaticResource Dim}" Margin="0,10,0,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <Button Content="Connect" Style="{StaticResource PrimaryButton}" MinWidth="120"
+                                Command="{Binding ConnectCommand}" IsEnabled="{Binding CanConnect}" Margin="0,0,0,8" />
+                        <Button Content="Disconnect" Command="{Binding DisconnectCommand}"
+                                IsEnabled="{Binding CanDisconnect}" MinWidth="120" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Profile picker -->
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="Profile" Style="{StaticResource H2}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox ItemsSource="{Binding ProfileNames}" SelectedItem="{Binding SelectedProfile}"
+                                  MinHeight="36" />
+                        <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshProfilesCommand}"
+                                Margin="10,0,0,0" MinHeight="36" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Real counters -->
+            <UniformGrid Columns="3" Margin="0,14,0,0">
+                <Border Style="{StaticResource Card}" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Text="Sent (total)" Style="{StaticResource Dim}" />
+                        <TextBlock Text="{Binding BytesSent}" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource Accent}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Text="Received (total)" Style="{StaticResource Dim}" />
+                        <TextBlock Text="{Binding BytesRecv}" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource Accent}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Uptime" Style="{StaticResource Dim}" />
+                        <TextBlock Text="{Binding Uptime}" FontSize="24" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="Active pipes" Style="{StaticResource Dim}" />
+                        <TextBlock Text="{Binding ActiveConns}" FontSize="24" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="Total pipes" Style="{StaticResource Dim}" />
+                        <TextBlock Text="{Binding TotalConns}" FontSize="24" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Reconnects" Style="{StaticResource Dim}" />
+                        <TextBlock Text="{Binding Reconnects}" FontSize="24" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Event log -->
+            <Border Style="{StaticResource Card}" Margin="0,4,0,0">
+                <StackPanel>
+                    <TextBlock Text="Event log" Style="{StaticResource H2}" />
+                    <ListBox ItemsSource="{Binding Events}" Height="220"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock FontFamily="Consolas" FontSize="12">
+                                    <Run Text="{Binding Timestamp, Mode=OneWay, StringFormat=HH:mm:ss}" Foreground="{StaticResource FgDim}" />
+                                    <Run Text="{Binding Level, Mode=OneWay}" />
+                                    <Run Text="{Binding Message, Mode=OneWay}" />
+                                </TextBlock>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

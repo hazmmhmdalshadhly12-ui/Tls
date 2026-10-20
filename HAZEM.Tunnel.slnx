@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="src/HAZEM.Tunnel.Core/HAZEM.Tunnel.Core.csproj" />
+  <Project Path="src/HAZEM.Tunnel.Networking/HAZEM.Tunnel.Networking.csproj" />
+  <Project Path="src/HAZEM.Tunnel.Infrastructure/HAZEM.Tunnel.Infrastructure.csproj" />
+  <Project Path="src/HAZEM.Tunnel.App/HAZEM.Tunnel.App.csproj" />
+  <Project Path="tests/HAZEM.Tunnel.Core.Tests/HAZEM.Tunnel.Core.Tests.csproj" />
+  <Project Path="tests/HAZEM.Tunnel.Configuration.Tests/HAZEM.Tunnel.Configuration.Tests.csproj" />
+  <Project Path="tests/HAZEM.Tunnel.Networking.Tests/HAZEM.Tunnel.Networking.Tests.csproj" />
+</Solution>

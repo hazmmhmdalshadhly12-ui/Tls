@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "name": "My SSH tunnel",
+  "transportKind": "Ssh",
+  "ssh": {
+    "host": "ssh.example.com",
+    "port": 22,
+    "username": "myuser",
+    "authMode": "Password",
+    "passwordRef": { "key": "profile:YOUR-PROFILE-ID:ssh-password" },
+    "hostKeyPolicy": "TrustOnFirstUse",
+    "remoteForwardHost": "10.0.0.5",
+    "remoteForwardPort": 80
+  },
+  "localProxy": {
+    "bindAddress": "127.0.0.1",
+    "port": 1080,
+    "allowLan": false,
+    "authMode": "None",
+    "idleTimeoutMs": 600000,
+    "maxClients": 64
+  },
+  "retry": { "maxAttempts": 5, "baseDelayMs": 1000, "maxDelayMs": 30000, "jitterRatio": 0.2 },
+  "connectTimeoutMs": 30000,
+  "autoReconnect": true
+}

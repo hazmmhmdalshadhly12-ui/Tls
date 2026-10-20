@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>HAZEM.Tunnel.Networking.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\HAZEM.Tunnel.Core\HAZEM.Tunnel.Core.csproj" />
+    <ProjectReference Include="..\..\src\HAZEM.Tunnel.Networking\HAZEM.Tunnel.Networking.csproj" />
+    <ProjectReference Include="..\..\src\HAZEM.Tunnel.Infrastructure\HAZEM.Tunnel.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

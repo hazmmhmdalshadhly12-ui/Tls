@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>HAZEM.Tunnel.Networking</RootNamespace>
+    <Description>HAZEM Tunnel networking: TLS/SNI, SSH, WebSocket transports, SOCKS5 proxy, relay, tunnel engine.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SSH.NET" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HAZEM.Tunnel.Core\HAZEM.Tunnel.Core.csproj" />
+  </ItemGroup>
+
+</Project>

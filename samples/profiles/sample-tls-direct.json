@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "name": "TLS diagnostics (direct)",
+  "transportKind": "TlsDirect",
+  "tls": {
+    "host": "www.example.com",
+    "port": 443,
+    "sni": "www.example.com",
+    "validateCertificates": true,
+    "handshakeTimeoutMs": 15000
+  },
+  "localProxy": {
+    "bindAddress": "127.0.0.1",
+    "port": 1083,
+    "allowLan": false,
+    "authMode": "None",
+    "idleTimeoutMs": 600000,
+    "maxClients": 16
+  },
+  "retry": { "maxAttempts": 3, "baseDelayMs": 1000, "maxDelayMs": 15000, "jitterRatio": 0.2 },
+  "connectTimeoutMs": 30000,
+  "autoReconnect": false
+}

@@ -1,0 +1,222 @@
+<Window x:Class="HAZEM.Tunnel.App.Views.ProfileEditorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vb="clr-namespace:HAZEM.Tunnel.App.Converters"
+        Title="Edit profile" Width="640" Height="720"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
+        Background="{StaticResource Bg}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="Name" Style="{StaticResource Dim}" />
+                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12" />
+
+                <TextBlock Text="Transport" Style="{StaticResource Dim}" />
+                <ComboBox ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding Transport}" Margin="0,4,0,14" />
+
+                <!-- ════ TLS group ════ -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding ShowTls, Converter={x:Static vb:VisibilityFromBool.Instance}}">
+                    <StackPanel>
+                        <TextBlock Text="TLS (with SNI)" Style="{StaticResource H2}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="110" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Host (dial target)" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding TlsHost, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,8,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Port" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding TlsPort}" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="SNI (ClientHello ServerName — may differ from Host)" Style="{StaticResource Dim}" Margin="0,10,0,0" />
+                        <TextBox Text="{Binding TlsSni, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        <TextBlock Text="Certificate validation is ALWAYS on for TLS transports." Foreground="{StaticResource Warn}" Style="{StaticResource Body}" Margin="0,8,0,0" FontSize="12" />
+                        <TextBlock Text="Additional trusted root CA (PEM, optional — adds trust, never replaces system trust)" Style="{StaticResource Dim}" Margin="0,10,0,0" />
+                        <TextBox Text="{Binding TrustedRootPem, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="NoWrap"
+                                 FontFamily="Consolas" FontSize="11" MinHeight="60" Margin="0,4,0,0" VerticalScrollBarVisibility="Auto" />
+                    </StackPanel>
+                </Border>
+
+                <!-- ════ SSH group ════ -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding ShowSsh, Converter={x:Static vb:VisibilityFromBool.Instance}}">
+                    <StackPanel>
+                        <TextBlock Text="SSH" Style="{StaticResource H2}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="SSH host" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding SshHost, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,8,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Port" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding SshPort}" Margin="0,4,8,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Username" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding SshUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Authentication" Style="{StaticResource Dim}" />
+                                <ComboBox ItemsSource="{Binding SshAuthModes}" SelectedItem="{Binding SshAuth}" Margin="0,4,8,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Host key policy" Style="{StaticResource Dim}" />
+                                <ComboBox ItemsSource="{Binding HostKeyPolicies}" SelectedItem="{Binding HostKeyPolicy}" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Margin="0,10,0,0" Visibility="{Binding ShowSshPassword, Converter={x:Static vb:VisibilityFromBool.Instance}}">
+                            <TextBlock Text="Password (stored via DPAPI, never in the profile file)" Style="{StaticResource Dim}" />
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <PasswordBox x:Name="SshPasswordBox" />
+                                <TextBlock Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="12"
+                                           Foreground="{StaticResource Good}" Text="stored ✔"
+                                           Visibility="{Binding HasPassword, Converter={x:Static vb:VisibilityFromBool.Instance}}" />
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Visibility="{Binding ShowSshKey, Converter={x:Static vb:VisibilityFromBool.Instance}}">
+                            <TextBlock Text="Private key (PEM — pasted here, saved via DPAPI)" Style="{StaticResource Dim}" />
+                            <TextBox x:Name="SshKeyBox" AcceptsReturn="True" FontFamily="Consolas" FontSize="11"
+                                     MinHeight="70" Margin="0,4,0,0" VerticalScrollBarVisibility="Auto" />
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <TextBlock Text="Key passphrase (optional):" Style="{StaticResource Dim}" VerticalAlignment="Center" />
+                                <PasswordBox x:Name="SshPassphraseBox" Width="180" Margin="10,0,0,0" />
+                                <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource Good}" Text="stored ✔"
+                                           Visibility="{Binding HasPassphrase, Converter={x:Static vb:VisibilityFromBool.Instance}}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Visibility="{Binding ShowPinned, Converter={x:Static vb:VisibilityFromBool.Instance}}">
+                            <TextBlock Text="Pinned host key fingerprint (SHA256:…)" Style="{StaticResource Dim}" />
+                            <TextBox Text="{Binding PinnedFingerprint, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" FontFamily="Consolas" />
+                        </StackPanel>
+
+                        <TextBlock Text="Remote forward target — what the SSH server connects to (the exit destination)" Style="{StaticResource Dim}" Margin="0,12,0,0" />
+                        <Grid Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="110" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding ForwardHost, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                            <TextBox Grid.Column="1" Text="{Binding ForwardPort}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ════ WebSocket group ════ -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding ShowWs, Converter={x:Static vb:VisibilityFromBool.Instance}}">
+                    <StackPanel>
+                        <TextBlock Text="WebSocket" Style="{StaticResource H2}" />
+                        <TextBlock Text="Endpoint URL (ws:// or wss://host:port/path)" Style="{StaticResource Dim}" />
+                        <TextBox Text="{Binding WsUrl, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                        <TextBlock Text="Extra handshake headers (one per line, 'Name: value'). Host and Sec-WebSocket-* are reserved." Style="{StaticResource Dim}" Margin="0,10,0,0" />
+                        <TextBox Text="{Binding WsHeadersText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"
+                                 FontFamily="Consolas" FontSize="12" MinHeight="60" Margin="0,4,0,0" VerticalScrollBarVisibility="Auto" />
+                    </StackPanel>
+                </Border>
+
+                <!-- ════ Local proxy ════ -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Local SOCKS5 proxy" Style="{StaticResource H2}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="110" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Bind address (127.0.0.1 unless LAN is intended)" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding BindAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,8,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Port" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding ProxyPort}" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <CheckBox Content="Allow LAN binding (opens the proxy to your network — think twice)"
+                                  IsChecked="{Binding AllowLan}" Margin="0,10,0,0" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="SOCKS5 authentication" Style="{StaticResource Dim}" />
+                                <ComboBox ItemsSource="{Binding ProxyAuthModes}" SelectedItem="{Binding ProxyAuth}" Margin="0,4,8,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Visibility="{Binding ShowProxyAuth, Converter={x:Static vb:VisibilityFromBool.Instance}}">
+                                <TextBlock Text="SOCKS5 credentials (stored via DPAPI)" Style="{StaticResource Dim}" />
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBox x:Name="SocksUserBox" Width="150" />
+                                    <PasswordBox x:Name="SocksPassBox" Width="150" Margin="10,0,0,0" />
+                                    <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource Good}" Text="stored ✔"
+                                               Visibility="{Binding HasProxyPassword, Converter={x:Static vb:VisibilityFromBool.Instance}}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ════ Retry ════ -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Retry (bounded, with backoff)" Style="{StaticResource H2}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="Max attempts" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding MaxAttempts}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                <TextBlock Text="Base delay (ms)" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding BaseDelayMs}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Max delay (ms)" Style="{StaticResource Dim}" />
+                                <TextBox Text="{Binding MaxDelayMs}" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Margin="0,14,0,0">
+            <TextBlock Text="{Binding ValidationText}" TextWrapping="Wrap" FontSize="12"
+                       Foreground="{Binding IsValid, Converter={x:Static vb:BoolToColor.Instance}}" MaxHeight="80" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                <Button Content="Validate" Command="{Binding ValidateNowCommand}" Margin="0,0,8,0" MinWidth="100" />
+                <Button Content="Cancel" IsCancel="True" Margin="0,0,8,0" MinWidth="100" />
+                <Button Content="Save" Style="{StaticResource PrimaryButton}" MinWidth="120" Click="OnSaveClick" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

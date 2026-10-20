@@ -1,0 +1,23 @@
+# .NET build artifacts
+bin/
+obj/
+out/
+artifacts/
+*.user
+*.suo
+.vs/
+*.binlog
+
+# Publish output (dist/ carries the packaged zip; scripts/publish.ps1 rebuilds)
+publish/
+
+# Logs
+logs/
+*.log
+
+# Local secrets / runtime state (never commit)
+*.profile.local.json
+appsettings.local.json
+known_hosts*.json
+*.pfx
+*.key

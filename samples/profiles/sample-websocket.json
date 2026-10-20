@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "name": "WebSocket tunnel",
+  "transportKind": "WebSocket",
+  "webSocket": {
+    "url": "wss://ws.example.org/tunnel",
+    "headers": {},
+    "handshakeTimeoutMs": 15000
+  },
+  "localProxy": {
+    "bindAddress": "127.0.0.1",
+    "port": 1082,
+    "allowLan": false,
+    "authMode": "None",
+    "idleTimeoutMs": 600000,
+    "maxClients": 64
+  },
+  "retry": { "maxAttempts": 5, "baseDelayMs": 1000, "maxDelayMs": 30000, "jitterRatio": 0.2 },
+  "connectTimeoutMs": 30000,
+  "autoReconnect": true
+}

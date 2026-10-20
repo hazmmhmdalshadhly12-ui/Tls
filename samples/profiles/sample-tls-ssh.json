@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "SSH behind TLS (combo)",
+  "transportKind": "TlsSsh",
+  "tls": {
+    "host": "203.0.113.10",
+    "port": 443,
+    "sni": "cdn.example.net",
+    "validateCertificates": true,
+    "handshakeTimeoutMs": 15000
+  },
+  "ssh": {
+    "host": "ssh.internal.example.net",
+    "port": 22,
+    "username": "myuser",
+    "authMode": "Password",
+    "passwordRef": { "key": "profile:YOUR-PROFILE-ID:ssh-password" },
+    "hostKeyPolicy": "TrustOnFirstUse",
+    "remoteForwardHost": "10.0.0.5",
+    "remoteForwardPort": 80
+  },
+  "localProxy": {
+    "bindAddress": "127.0.0.1",
+    "port": 1081,
+    "allowLan": false,
+    "authMode": "None",
+    "idleTimeoutMs": 600000,
+    "maxClients": 64
+  },
+  "retry": { "maxAttempts": 5, "baseDelayMs": 1000, "maxDelayMs": 30000, "jitterRatio": 0.2 },
+  "connectTimeoutMs": 30000,
+  "autoReconnect": true
+}
