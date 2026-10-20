@@ -43,8 +43,13 @@ public sealed class DiCompositionTests : IClassFixture<DiCompositionTests.Compos
     public void MainViewModel_resolves_and_composes_every_page()
     {
         // MainViewModel's ctor sets SelectedPage → creates the first WPF view → must run
-        // on an STA thread (as it does on the real UI thread).
-        var main = ResolveOnStaThread(() => _fx.Provider.GetRequiredService<MainViewModel>());
+        // on an STA thread (as it does on the real UI thread) with the app's real
+        // resource dictionaries loaded (views reference theme styles via StaticResource).
+        var main = ResolveOnStaThread(() =>
+        {
+            EnsureAppResourcesLoaded();
+            return _fx.Provider.GetRequiredService<MainViewModel>();
+        });
         Assert.NotNull(main);
         // MainViewModel builds its page list from the child VMs — all pages must exist.
         Assert.True(main!.Pages.Count >= 8, $"Expected at least 8 pages, got {main.Pages.Count}.");
@@ -172,6 +177,30 @@ public sealed class DiCompositionTests : IClassFixture<DiCompositionTests.Compos
         thread.Join();
         if (error is not null) throw error;
         return result!;
+    }
+
+    /// <summary>
+    /// Mirrors App.xaml: creates the WPF Application (if the test host has none) and
+    /// merges the real DarkTheme dictionary, so view XAML resolves its StaticResources
+    /// exactly as it does in production.
+    /// </summary>
+    private static void EnsureAppResourcesLoaded()
+    {
+        if (System.Windows.Application.Current is null)
+        {
+            _ = new System.Windows.Application
+            {
+                ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown
+            };
+        }
+        var resources = System.Windows.Application.Current.Resources;
+        if (resources.MergedDictionaries.Count == 0)
+        {
+            resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/HAZEM.Tunnel;component/Themes/DarkTheme.xaml")
+            });
+        }
     }
 
     /// <summary>
