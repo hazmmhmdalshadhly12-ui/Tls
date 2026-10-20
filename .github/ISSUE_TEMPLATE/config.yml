@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security vulnerability
+    url: https://github.com/hazmmhmdalshadhly12-ui/Tls/security/advisories/new
+    about: Please report vulnerabilities privately — do not open a public issue.
+  - name: 📚 Documentation
+    url: https://github.com/hazmmhmdalshadhly12-ui/Tls#readme
+    about: Config schema, security model, and usage docs live in the README and docs/.
