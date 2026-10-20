@@ -25,8 +25,9 @@ HAZEM Tunnel is a Windows desktop client (WPF, MVVM, .NET 10) that runs a **loca
 
 The app is built around one principle: **honesty**. "Connected" appears only after a *real through-tunnel health check* succeeds. Statistics show *real* relayed bytes. Nothing is faked, nothing is exaggerated, and secrets never touch disk in plaintext.
 
-> **v1.2.0** fixes the v1.1.0 startup crash (`Unable to resolve service for type 'ITunnelEngine'…`) —
-> the DI composition is now covered by automated tests — and adds a **real Windows installer (MSI)**. See [CHANGELOG](CHANGELOG.md).
+> **v1.2.1** keeps the v1.2.0 DI startup fix, upgrades the MSI to a **full program-folder
+> install** (278 files into `%ProgramFiles%\HAZEM Tunnel`, MSZIP cabinet, close-on-install,
+> download-verified integrity). See [CHANGELOG](CHANGELOG.md).
 
 | ✅ What it DOES | ❌ What it does NOT do |
 |---|---|
@@ -44,16 +45,23 @@ Only apps that are *configured to use the proxy* are tunneled. Everything else c
 
 **Option A — Windows installer (recommended):**
 
-1. Get **`HAZEM-Tunnel-1.2.0-setup.msi`** from the [**Releases page**](https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/latest).
+1. Get **`HAZEM-Tunnel-1.2.1-setup.msi`** from the [**Releases page**](https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/latest).
 2. Double-click → **Next → Install**. That's it.
 3. Launch **HAZEM Tunnel** from the Start Menu or the desktop shortcut.
 4. Uninstall any time from *Settings → Apps → Installed apps*.
 
-Installs into `%ProgramFiles%\HAZEM Tunnel`, registers in *Apps & features*, upgrades cleanly over older versions.
+Installs the **complete program folder** into `%ProgramFiles%\HAZEM Tunnel` (no TEMP
+self-extraction at runtime — the app runs straight from Program Files), registers in
+*Apps & features*, closes a running copy while upgrading, and upgrades cleanly over
+older versions.
+
+> 💡 If Windows ever reports *"The cabinet file 'cab1.cab' … is corrupt"*, the download
+> was interrupted — re-download and verify with the attached `.sha256` file:
+> `certutil -hashfile HAZEM-Tunnel-1.2.1-setup.msi SHA256`
 
 **Option B — portable (no install):**
 
-1. Get **`HAZEM-Tunnel-1.2.0-win-x64.zip`** from the [Releases page](https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/latest).
+1. Get **`HAZEM-Tunnel-1.2.1-win-x64.zip`** from the [Releases page](https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/latest).
 2. Extract → run **`HAZEM.Tunnel.exe`**. **No .NET install needed** (self-contained, x64).
 
 **Requirements:** Windows 10 1809+ / Windows 11, x64.
@@ -165,5 +173,5 @@ Contributions are welcome! Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) firs
 [MIT](LICENSE) · Third-party: SSH.NET (MIT), .NET runtime (MIT).
 
 <div align="center">
-<sub>Built with ❤️ for Windows — HAZEM Tunnel v1.2.0</sub>
+<sub>Built with ❤️ for Windows — HAZEM Tunnel v1.2.1</sub>
 </div>

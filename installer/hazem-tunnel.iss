@@ -4,7 +4,7 @@
 ; The EXE must exist at publish\win-x64\HAZEM.Tunnel.exe (run scripts\publish.ps1 first).
 
 #define AppName "HAZEM Tunnel"
-#define AppVersion "1.2.0"
+#define AppVersion "1.2.1"
 #define AppPublisher "HAZEM"
 #define AppExeName "HAZEM.Tunnel.exe"
 

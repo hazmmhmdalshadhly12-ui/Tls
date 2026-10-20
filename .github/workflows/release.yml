@@ -33,6 +33,15 @@ jobs:
           Write-Host "Publishing version $v"
           pwsh -File scripts/publish.ps1 -Version $v
 
+      - name: Generate harvested MSI source (one component per file)
+        shell: pwsh
+        run: |
+          python installer/msi/gen_wxs.py `
+            --publish-dir publish/win-x64 `
+            --template installer/msi/HAZEMTunnel.wxs.template `
+            --out obj/msi/HAZEMTunnel.wxs
+          if ($LASTEXITCODE -ne 0) { throw "gen_wxs.py failed with exit code $LASTEXITCODE" }
+
       - name: Build MSI installer (WiX v5 on Windows)
         shell: pwsh
         env:
@@ -40,10 +49,12 @@ jobs:
         run: |
           $v = $env:VERSION.TrimStart("v")
           dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.Util.wixext/5.0.2
           wix build -arch x64 `
+            -ext WixToolset.Util.wixext `
             -d "PublishDir=publish/win-x64/" `
             -d "AppIcon=src/HAZEM.Tunnel.App/Assets/app.ico" `
-            installer/msi/HAZEMTunnel.wxs `
+            obj/msi/HAZEMTunnel.wxs `
             -o "dist/HAZEM-Tunnel-$v-setup.msi"
           if ($LASTEXITCODE -ne 0) { throw "wix build failed with exit code $LASTEXITCODE" }
           Write-Host "Built dist/HAZEM-Tunnel-$v-setup.msi"
@@ -60,6 +71,16 @@ jobs:
             "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
             Write-Host "SHA-256 [$zip]: $hash"
           }
+
+      # Uploaded as a build artifact (NOT a release asset) so the exact files that
+      # went into the MSI can be byte-compared against the cabinet afterwards.
+      - name: Upload publish folder artifact (verification source)
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-win-x64-${{ github.ref_name }}
+          path: publish/win-x64
+          retention-days: 14
+          if-no-files-found: error
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
