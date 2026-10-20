@@ -1,3 +1,29 @@
+# HAZEM Tunnel Build & Delivery Report
+
+**Build host:** Linux container (Debian-based), .NET SDK 10.0.402
+**Target:** `win-x64`, self-contained, single-file WPF EXE
+**Honesty rule:** every number below comes from an actually executed command.
+
+## 0. v1.2.0 addendum (2026-10)
+
+- **Startup crash fixed.** v1.1.0 crashed on a clean Windows machine:
+  `Unable to resolve service for type 'ITunnelEngine' while attempting to activate 'DashboardViewModel'`.
+  The DI composition root had 7 broken/missing registrations (interfaces never aliased,
+  `InMemoryLogProvider`/`ILoggerFactory`/`TunnelSettingsViewModel` never registered) and no
+  test ever built the container. Root cause + full fix list: see [CHANGELOG](../CHANGELOG.md).
+- **New 4th test project** `tests/HAZEM.Tunnel.App.Tests` — builds the real container with
+  `ValidateOnBuild`/`ValidateScopes` and resolves every ViewModel (8 tests). Runs on the
+  windows-latest CI runner (WPF runtime required); the other 3 projects run anywhere
+  (101 tests locally on Linux at time of writing).
+- **MSI installer added** (`installer/msi/HAZEMTunnel.wxs`, WiX 5). Note: it is built in the
+  release workflow on `windows-latest` — WiX 5/6's `Directory/@Name` canonicalization
+  (`BundleValidator.GetCanonicalRelativePath` hard-codes `C:\` in `Path.GetFullPath`)
+  rejects every valid name on Linux.
+- Verified on Linux: `dotnet build HAZEM.Tunnel.slnx -c Release` → 0 warnings / 0 errors;
+  `dotnet test` (3 Linux-runnable projects) → 101 passed / 0 failed.
+
+---
+
 # HAZEM Tunnel v1.1.0 — Build & Delivery Report
 
 **Build host:** Linux container (Debian-based), .NET SDK 10.0.402

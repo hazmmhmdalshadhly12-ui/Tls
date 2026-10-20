@@ -21,3 +21,10 @@ appsettings.local.json
 known_hosts*.json
 *.pfx
 *.key
+# Build artifacts
+dist/*.zip
+dist/*.msi
+dist/*.sha256
+
+# Publish output
+publish/

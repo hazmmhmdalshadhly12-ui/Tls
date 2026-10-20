@@ -53,5 +53,5 @@ You can expect an initial response within **7 days**. Please give a coordinated-
 Each release ships `HAZEM-Tunnel-<version>-win-x64.zip`. The SHA-256 checksum is published alongside it. Verify before running:
 
 ```powershell
-Get-FileHash .\HAZEM-Tunnel-1.1.0-win-x64.zip -Algorithm SHA256
+Get-FileHash .\HAZEM-Tunnel-1.2.0-win-x64.zip -Algorithm SHA256
 ```

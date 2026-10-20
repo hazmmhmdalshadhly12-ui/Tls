@@ -2,7 +2,7 @@
 # Produces publish\win-x64\HAZEM.Tunnel.exe (single file, self-contained)
 # Usage: powershell -ExecutionPolicy Bypass -File scripts\publish.ps1 [-Version 1.1.0]
 param(
-    [string]$Version = "1.1.0"
+    [string]$Version = "1.2.0"
 )
 $ErrorActionPreference = "Stop"
 

@@ -1,22 +1,14 @@
-using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using HAZEM.Tunnel.App.Services;
 using HAZEM.Tunnel.App.ViewModels;
 using HAZEM.Tunnel.App.Views;
-using HAZEM.Tunnel.Core.Interfaces;
-using HAZEM.Tunnel.Core.Models;
 using HAZEM.Tunnel.Core.Secrets;
-using HAZEM.Tunnel.Core.Validation;
 using HAZEM.Tunnel.Infrastructure;
 using HAZEM.Tunnel.Infrastructure.Configuration;
-using HAZEM.Tunnel.Infrastructure.Credentials;
 using HAZEM.Tunnel.Infrastructure.Logging;
 using HAZEM.Tunnel.Infrastructure.Persistence;
-using HAZEM.Tunnel.Networking;
 using HAZEM.Tunnel.Networking.Diagnostics;
-using HAZEM.Tunnel.Networking.Ssh;
-using HAZEM.Tunnel.Networking.Tls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -24,6 +16,11 @@ namespace HAZEM.Tunnel.App;
 
 /// <summary>
 /// Application entry point.
+/// v1.2.0 fixes baked in:
+///  - The DI composition root was extracted to AppComposition and is covered by automated
+///    tests — the v1.1.0 startup crash (missing ITunnelEngine registration) can not ship again.
+///  - The container is built with ValidateOnBuild; a broken registration shows a friendly
+///    dialog with the log folder and exits cleanly instead of a cryptic activation error.
 /// v1.1.0 fixes baked in:
 ///  - Single-instance mutex: a second launch can never fight over the log file again.
 ///  - The rotating file provider can never throw (see RotatingFileLoggerProvider).
@@ -70,99 +67,66 @@ public partial class App : Application
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
         // ── 4. DI container ──
-        var services = new ServiceCollection();
-        ConfigureServices(services, settings);
-        _services = services.BuildServiceProvider();
-
-        // ── 5. Main window ──
-        var mainWindow = new MainWindow
-        {
-            DataContext = _services.GetRequiredService<MainViewModel>()
-        };
-        MainWindow = mainWindow;
-        mainWindow.Show();
-    }
-
-    private static void ConfigureServices(IServiceCollection services, AppSettings settings)
-    {
-        // Infrastructure
-        services.AddSingleton(_redactor!);
-        services.AddSingleton<ICredentialStore>(sp => CredentialStoreFactory.Create());
-        services.AddSingleton<IProfileStore>(sp => new JsonProfileStore(
-            sp.GetRequiredService<ILoggerFactory>().CreateLogger<JsonProfileStore>()));
-        services.AddSingleton<IKnownHostsStore>(sp => new KnownHostsFileStore());
-        services.AddSingleton<IAppSettingsStore>(sp => new AppSettingsStore());
-
-        // Core services
-        services.AddSingleton<ProfileValidator>();
-        services.AddSingleton<ProfileImporter>();
-        services.AddSingleton(sp => new SecretResolver(
-            sp.GetRequiredService<ICredentialStore>(),
-            sp.GetRequiredService<SecretRedactor>(),
-            sp.GetRequiredService<ILoggerFactory>().CreateLogger<SecretResolver>()));
-        services.AddSingleton(sp => new SshHostKeyVerifier(sp.GetRequiredService<IKnownHostsStore>()));
-        services.AddSingleton(sp => new TlsConnector(sp.GetRequiredService<ILogger<TlsConnector>>()));
-        services.AddSingleton(sp => new SshConnector(
-            sp.GetRequiredService<SshHostKeyVerifier>(),
-            sp.GetRequiredService<SecretResolver>(),
-            sp.GetRequiredService<ILogger<SshConnector>>()));
-        services.AddSingleton(sp => new TransportFactory(
-            sp.GetRequiredService<TlsConnector>(),
-            sp.GetRequiredService<SshConnector>(),
-            sp.GetRequiredService<SshHostKeyVerifier>(),
-            sp.GetRequiredService<ILoggerFactory>()));
-        services.AddSingleton(sp => new HealthChecker(sp.GetRequiredService<ILogger<HealthChecker>>()));
-
-        // Tunnel engine: SOCKS5 credentials resolved through the credential store, checked without logging them.
-        services.AddSingleton(sp => new TunnelEngine(
-            sp.GetRequiredService<TransportFactory>(),
-            sp.GetRequiredService<HealthChecker>(),
-            sp.GetRequiredService<ILogger<TunnelEngine>>(),
-            proxyCredentialChecker: (user, pass) =>
-            {
-                // Wired lazily: real validation happens against the credential store only when a
-                // profile with UsernamePassword auth is active. Never logged.
-                return CheckProxyCredentials(user, pass);
-            }));
-
-        // View models
-        services.AddSingleton<MainViewModel>();
-        services.AddSingleton<DashboardViewModel>();
-        services.AddSingleton<ServersViewModel>();
-        services.AddSingleton<ProfilesViewModel>();
-        services.AddSingleton<StatisticsViewModel>();
-        services.AddSingleton<LogsViewModel>();
-        services.AddSingleton<SettingsViewModel>();
-        services.AddSingleton<AboutViewModel>();
-        services.AddSingleton<DialogService>();
-    }
-
-    private static bool CheckProxyCredentials(string user, string pass)
-    {
-        // The engine passes the SOCKS5 client-supplied credentials; compare with the stored pair.
+        // Built with ValidateOnBuild: a broken registration fails HERE — before any window
+        // is shown — with a friendly dialog that points at the log folder, instead of a
+        // cryptic activation error mid-startup (the v1.1.0 ITunnelEngine crash).
         try
         {
-            var store = Services.GetRequiredService<ICredentialStore>();
-            var activeUser = store.GetSecret("active:socks-username");
-            var activePass = store.GetSecret("active:socks-password");
-            if (activeUser is null || activePass is null) return false;
-            return FixedTimeEquals(activeUser, user) && FixedTimeEquals(activePass, pass);
+            var services = new ServiceCollection();
+            AppComposition.ConfigureServices(services, _redactor!, _loggerFactory!, _memoryLog!);
+            _services = AppComposition.BuildServiceProvider(services);
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            ShowFatalStartupError(ex, "building the application services");
+            return;
+        }
+
+        // ── 5. Main window ──
+        try
+        {
+            var mainWindow = new MainWindow
+            {
+                DataContext = _services.GetRequiredService<MainViewModel>()
+            };
+            MainWindow = mainWindow;
+            mainWindow.Show();
+        }
+        catch (Exception ex)
+        {
+            ShowFatalStartupError(ex, "opening the main window");
         }
     }
 
-    private static bool FixedTimeEquals(string a, string b)
+    /// <summary>
+    /// Startup must never die silently or half-start. Logs the failure, shows a plain
+    /// message with the log location, opens the log folder, and exits cleanly.
+    /// </summary>
+    private void ShowFatalStartupError(Exception ex, string while_)
     {
-        var ba = System.Text.Encoding.UTF8.GetBytes(a);
-        var bb = System.Text.Encoding.UTF8.GetBytes(b);
-        var len = Math.Max(ba.Length, bb.Length);
-        var diff = ba.Length ^ bb.Length;
-        for (var i = 0; i < len; i++)
-            diff |= (i < ba.Length ? ba[i] : 0) ^ (i < bb.Length ? bb[i] : 0);
-        return diff == 0;
+        try { _loggerFactory?.CreateLogger("App").LogCritical(ex, "Startup failed while {0}.", while_); } catch { }
+        var logDir = AppPaths.Logs;
+        var message =
+            "HAZEM Tunnel could not start (" + while_ + ").\n\n" +
+            Describe(ex) + "\n\n" +
+            "The full details were written to the log:\n" + logDir + "\n\n" +
+            "Please include the latest hazem-*.log file if you report this problem.";
+        try
+        {
+            MessageBox.Show(message, "HAZEM Tunnel — startup problem",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        catch { /* a message box failing must not crash the shutdown path */ }
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = logDir,
+                UseShellExecute = true
+            });
+        }
+        catch { /* explorer may be unavailable; not fatal */ }
+        Shutdown(1);
     }
 
     // ───────────────────── global exception handling ─────────────────────

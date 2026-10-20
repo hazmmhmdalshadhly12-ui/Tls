@@ -1,0 +1,98 @@
+<!--
+  HAZEM Tunnel — Windows MSI installer (WiX Toolset 5)
+
+  Build from the repository root:
+    - Windows:   scripts\build-installer.ps1   (runs publish + wix build)
+    - Any OS:    dotnet publish src/HAZEM.Tunnel.App -c Release -r win-x64 [self contained, single file]
+                 then: wix build -arch x64 -d PublishDir=publish/win-x64/ installer/msi/HAZEMTunnel.wxs
+                       -o dist/HAZEM-Tunnel-(version)-setup.msi
+
+  What this installer does (like any normal Windows program):
+    - Installs HAZEM.Tunnel.exe into %ProgramFiles%\HAZEM Tunnel (64-bit)
+    - Start Menu shortcut (HAZEM Tunnel → HAZEM.Tunnel.exe)
+    - Desktop shortcut
+    - Registers in "Apps & features" with an entry icon + project link
+    - Major-upgrade aware: installing 1.2.1 over 1.2.0 replaces it; installing an
+      older build over a newer one is refused.
+    - Clean uninstall: removes the EXE, shortcuts and the Start Menu folder.
+      User data (%LocalAppData%\HAZEMTunnel) is deliberately preserved.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Package Name="HAZEM Tunnel"
+           Manufacturer="HAZEM"
+           Version="1.2.0"
+           UpgradeCode="189C476F-07E3-4FE3-BBC5-99526E42A0D9"
+           Scope="perMachine"
+           Compressed="yes"
+           Language="1033"
+           Codepage="1252">
+
+    <SummaryInformation Description="HAZEM Tunnel — Windows TLS/SSH/WebSocket tunneling desktop client with a local SOCKS5 proxy" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] ([CurrentVersion]) is already installed. Uninstall it first." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Add/Remove Programs entry -->
+    <Property Id="ARPPRODUCTICON" Value="HazemTunnelIcon" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/hazmmhmdalshadhly12-ui/Tls" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/hazmmhmdalshadhly12-ui/Tls" />
+    <Icon Id="HazemTunnelIcon" SourceFile="$(AppIcon)" />
+
+    <!-- 64-bit Program Files -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="HAZEM Tunnel">
+        <Component Id="MainExecutable" Guid="CA083385-B03D-45F5-9C48-03F2FED032B2">
+          <File Id="HAZEMTunnelExe"
+                Name="HAZEM.Tunnel.exe"
+                Source="$(PublishDir)HAZEM.Tunnel.exe"
+                KeyPath="yes"
+                Checksum="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <!-- Start Menu folder + shortcut -->
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppProgramMenuFolder" Name="HAZEM Tunnel">
+        <Component Id="StartMenuShortcuts" Guid="EC754B65-815A-43B2-9F98-D4528927DAF0">
+          <Shortcut Id="StartMenuApp"
+                    Name="HAZEM Tunnel"
+                    Description="Route your apps through TLS/SSH/WebSocket tunnels via a local SOCKS5 proxy"
+                    Target="[INSTALLFOLDER]HAZEM.Tunnel.exe"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="HazemTunnelIcon" />
+          <RemoveFolder Id="RemoveAppProgramMenuFolder" Directory="AppProgramMenuFolder" On="uninstall" />
+          <RegistryValue Root="HKCU" Key="Software\HAZEM\Tunnel"
+                         Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <!-- Desktop shortcut -->
+    <StandardDirectory Id="DesktopFolder">
+      <Component Id="DesktopShortcut" Guid="F477FBD5-D382-4781-B0CA-9079311D576A">
+        <Shortcut Id="DesktopApp"
+                  Name="HAZEM Tunnel"
+                  Description="HAZEM Tunnel"
+                  Target="[INSTALLFOLDER]HAZEM.Tunnel.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="HazemTunnelIcon" />
+        <RegistryValue Root="HKCU" Key="Software\HAZEM\Tunnel"
+                       Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <Feature Id="Main"
+             Title="HAZEM Tunnel"
+             Description="Installs HAZEM.Tunnel.exe and shortcuts."
+             Level="1"
+             AllowAbsent="no">
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="StartMenuShortcuts" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+  </Package>
+</Wix>

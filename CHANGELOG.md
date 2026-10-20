@@ -5,6 +5,51 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ---
 
+## [1.2.0] — 2026-10
+
+### Fixed — startup crash: DI composition was never validated
+v1.1.0 crashed at startup on a clean machine with:
+
+> *Unable to resolve service for type 'HAZEM.Tunnel.Core.Interfaces.ITunnelEngine'
+> while attempting to activate 'HAZEM.Tunnel.App.ViewModels.DashboardViewModel'.*
+
+Root cause: the ViewModels depend on **interfaces** while the composition root registered
+only **concrete classes**, and several services were never registered at all. A full audit
+found seven broken/missing registrations that would have crashed one after another:
+
+1. `ITunnelEngine` — only concrete `TunnelEngine` was registered (the reported crash).
+2. `ISshConnector` — only concrete `SshConnector` (Servers page).
+3. `IDialogService` — only concrete `DialogService` (used by five pages).
+4. `IHealthChecker` — only concrete `HealthChecker`.
+5. `InMemoryLogProvider` — never registered (Logs page).
+6. `ILoggerFactory` / `ILogger<T>` — never registered (used by the profile store and every ViewModel logger).
+7. `TunnelSettingsViewModel` — never registered (MainViewModel composes it).
+
+Fixes:
+
+- **Composition root extracted** to [`AppComposition`](src/HAZEM.Tunnel.App/Services/AppComposition.cs) —
+  every interface used by a ViewModel now aliases the same shared singleton.
+- **New 4th test project** [`HAZEM.Tunnel.App.Tests`](tests/HAZEM.Tunnel.App.Tests/) builds the REAL container
+  (`ValidateOnBuild` + `ValidateScopes`) and resolves every ViewModel, asserts the interface
+  aliases are shared singletons, and exercises the proxy credential checker. A missing
+  registration now fails CI instead of shipping.
+- **Fail-fast startup**: the container is built with `ValidateOnBuild` before any window is
+  shown; if composition fails, a plain message names the problem, points to the log folder
+  (opened automatically) and exits cleanly — no cryptic mid-activation dialogs.
+- `About` page version is now read from the assembly version instead of being hard-coded.
+
+### Added — real Windows installer
+- **MSI installer** (`HAZEM-Tunnel-<version>-setup.msi`, WiX 5): installs into
+  `%ProgramFiles%\HAZEM Tunnel`, Start Menu + desktop shortcuts, *Apps & features* entry
+  with icon, major-upgrade aware, clean uninstall (user data preserved).
+- The release workflow now builds the MSI on `windows-latest` for every `v*` tag and
+  attaches it (with a `.sha256` checksum file) to the GitHub Release next to the portable zip.
+- `scripts\build-installer.ps1` builds the same MSI locally on Windows.
+- The Inno Setup script got a **valid AppId GUID** (the old one contained non-hex
+  characters) and the current version.
+
+---
+
 ## [1.1.0] — 2026-10
 
 ### Fixed — startup log error dialog
@@ -59,5 +104,7 @@ Fixed at four levels:
 - Scripts: `scripts/build.ps1`, `scripts/test.ps1`, `scripts/publish.ps1`.
 - Docs: config schema, manual QA checklist, honest build report.
 
+
+[1.2.0]: https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/tag/v1.2.0
 [1.1.0]: https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/tag/v1.1.0
 [1.0.0]: https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/tag/v1.0.0

@@ -8,7 +8,7 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/hazmmhmdalshadhly12-ui/Tls/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/hazmmhmdalshadhly12-ui/Tls/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/hazmmhmdalshadhly12-ui/Tls?style=flat-square)](https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/latest)
-[![Tests](https://img.shields.io/badge/tests-84%20passing-brightgreen?style=flat-square)](docs/BUILD_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-109%20passing-brightgreen?style=flat-square)](docs/BUILD_REPORT.md)
 [![License](https://img.shields.io/github/license/hazmmhmdalshadhly12-ui/Tls?style=flat-square)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11%20x64-blue?style=flat-square)
 ![Runtime](https://img.shields.io/badge/runtime-.NET%2010%20WPF-8b5cf6?style=flat-square)
@@ -25,7 +25,8 @@ HAZEM Tunnel is a Windows desktop client (WPF, MVVM, .NET 10) that runs a **loca
 
 The app is built around one principle: **honesty**. "Connected" appears only after a *real through-tunnel health check* succeeds. Statistics show *real* relayed bytes. Nothing is faked, nothing is exaggerated, and secrets never touch disk in plaintext.
 
-> **v1.1.0** fixes the v1.0.0 startup error dialog *"The process cannot access the file …\logs\hazem-\*.log because it is being used by another process"*. See [CHANGELOG](CHANGELOG.md).
+> **v1.2.0** fixes the v1.1.0 startup crash (`Unable to resolve service for type 'ITunnelEngine'…`) —
+> the DI composition is now covered by automated tests — and adds a **real Windows installer (MSI)**. See [CHANGELOG](CHANGELOG.md).
 
 | ✅ What it DOES | ❌ What it does NOT do |
 |---|---|
@@ -39,16 +40,29 @@ Only apps that are *configured to use the proxy* are tunneled. Everything else c
 
 ---
 
-## ⬇️ Download & run
+## ⬇️ Install (like every other program) or go portable
 
-1. Get **`HAZEM-Tunnel-1.1.0-win-x64.zip`** from the [**Releases page**](https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/latest) (or `dist/`).
+**Option A — Windows installer (recommended):**
+
+1. Get **`HAZEM-Tunnel-1.2.0-setup.msi`** from the [**Releases page**](https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/latest).
+2. Double-click → **Next → Install**. That's it.
+3. Launch **HAZEM Tunnel** from the Start Menu or the desktop shortcut.
+4. Uninstall any time from *Settings → Apps → Installed apps*.
+
+Installs into `%ProgramFiles%\HAZEM Tunnel`, registers in *Apps & features*, upgrades cleanly over older versions.
+
+**Option B — portable (no install):**
+
+1. Get **`HAZEM-Tunnel-1.2.0-win-x64.zip`** from the [Releases page](https://github.com/hazmmhmdalshadhly12-ui/Tls/releases/latest).
 2. Extract → run **`HAZEM.Tunnel.exe`**. **No .NET install needed** (self-contained, x64).
-3. Requirements: Windows 10 1809+ / Windows 11, x64.
+
+**Requirements:** Windows 10 1809+ / Windows 11, x64.
 
 ### SmartScreen note (unsigned build)
-This EXE is **not code-signed**. Windows SmartScreen may show *"Windows protected your PC"*.
-Click **More info → Run anyway**, or right-click the EXE → Properties → Unblock.
-This is expected for self-published builds; future releases may be signed.
+The EXE and MSI are **not code-signed**. Windows SmartScreen may show *"Windows protected your PC"*.
+Click **More info → Run anyway**, or right-click the file → Properties → Unblock.
+This is expected for self-published builds; future releases may be signed. Verify downloads
+with the SHA-256 checksums published on each release.
 
 ---
 
@@ -151,5 +165,5 @@ Contributions are welcome! Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) firs
 [MIT](LICENSE) · Third-party: SSH.NET (MIT), .NET runtime (MIT).
 
 <div align="center">
-<sub>Built with ❤️ for Windows — HAZEM Tunnel v1.1.0</sub>
+<sub>Built with ❤️ for Windows — HAZEM Tunnel v1.2.0</sub>
 </div>

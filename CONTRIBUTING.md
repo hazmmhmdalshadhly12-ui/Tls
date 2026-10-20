@@ -9,7 +9,7 @@ Thanks for your interest in improving HAZEM Tunnel! This document covers everyth
 1. **Honesty is a feature.** Never fake statistics, health checks, or connectivity states. "Connected" may only appear after a real through-tunnel health check passes.
 2. **Security is non-negotiable.** TLS certificate validation is never disabled — not even behind a flag. Secrets never appear in profiles, logs, or tests in plaintext.
 3. **Zero-warnings build policy.** `TreatWarningsAsErrors` is on. Code must build with **0 warnings**.
-4. **Tests must stay green.** `scripts\test.ps1` (84+ tests across 3 projects) must pass before any PR is merged.
+4. **Tests must stay green.** `scripts\test.ps1` (109+ tests across 4 projects) must pass before any PR is merged.
 
 ---
 

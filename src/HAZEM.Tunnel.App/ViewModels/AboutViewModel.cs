@@ -6,7 +6,10 @@ namespace HAZEM.Tunnel.App.ViewModels;
 public partial class AboutViewModel : ObservableObject
 {
     public string AppName => "HAZEM Tunnel";
-    public string Version => "1.1.0";
+    public string Version =>
+        typeof(AboutViewModel).Assembly.GetName().Version is { } v
+            ? $"{v.Major}.{v.Minor}.{v.Build}"
+            : "1.2.0";
 
     public string Purpose =>
         "A Windows desktop client that routes your configured applications through an encrypted " +

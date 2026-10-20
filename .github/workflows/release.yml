@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   release:
-    name: Publish win-x64 & attach zip
+    name: Publish win-x64, build MSI & attach artifacts
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -24,7 +24,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Publish + package (version from tag)
+      - name: Publish + package portable zip (version from tag)
         shell: pwsh
         env:
           VERSION: ${{ github.ref_name }}
@@ -33,17 +33,33 @@ jobs:
           Write-Host "Publishing version $v"
           pwsh -File scripts/publish.ps1 -Version $v
 
-      - name: Compute SHA-256
+      - name: Build MSI installer (WiX v5 on Windows)
         shell: pwsh
         env:
           VERSION: ${{ github.ref_name }}
         run: |
           $v = $env:VERSION.TrimStart("v")
-          $zip = "dist/HAZEM-Tunnel-$v-win-x64.zip"
-          if (-not (Test-Path $zip)) { throw "Missing artifact: $zip" }
-          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
-          "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
-          Write-Host "SHA-256: $hash"
+          dotnet tool install --global wix --version 5.0.2
+          wix build -arch x64 `
+            -d "PublishDir=publish/win-x64/" `
+            -d "AppIcon=src/HAZEM.Tunnel.App/Assets/app.ico" `
+            installer/msi/HAZEMTunnel.wxs `
+            -o "dist/HAZEM-Tunnel-$v-setup.msi"
+          if ($LASTEXITCODE -ne 0) { throw "wix build failed with exit code $LASTEXITCODE" }
+          Write-Host "Built dist/HAZEM-Tunnel-$v-setup.msi"
+
+      - name: Compute SHA-256 checksums
+        shell: pwsh
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          $v = $env:VERSION.TrimStart("v")
+          foreach ($zip in @("dist/HAZEM-Tunnel-$v-win-x64.zip", "dist/HAZEM-Tunnel-$v-setup.msi")) {
+            if (-not (Test-Path $zip)) { throw "Missing artifact: $zip" }
+            $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+            "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
+            Write-Host "SHA-256 [$zip]: $hash"
+          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -51,4 +67,6 @@ jobs:
           generate_release_notes: true
           files: |
             dist/*.zip
-            dist/*.sha256
+            dist/*.zip.sha256
+            dist/*.msi
+            dist/*.msi.sha256

@@ -6,4 +6,5 @@
   <Project Path="tests/HAZEM.Tunnel.Core.Tests/HAZEM.Tunnel.Core.Tests.csproj" />
   <Project Path="tests/HAZEM.Tunnel.Configuration.Tests/HAZEM.Tunnel.Configuration.Tests.csproj" />
   <Project Path="tests/HAZEM.Tunnel.Networking.Tests/HAZEM.Tunnel.Networking.Tests.csproj" />
+  <Project Path="tests/HAZEM.Tunnel.App.Tests/HAZEM.Tunnel.App.Tests.csproj" />
 </Solution>

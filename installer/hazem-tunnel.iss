@@ -4,12 +4,13 @@
 ; The EXE must exist at publish\win-x64\HAZEM.Tunnel.exe (run scripts\publish.ps1 first).
 
 #define AppName "HAZEM Tunnel"
-#define AppVersion "1.1.0"
+#define AppVersion "1.2.0"
 #define AppPublisher "HAZEM"
 #define AppExeName "HAZEM.Tunnel.exe"
 
 [Setup]
-AppId={{7E1B6C4E-5B44-4B9F-9C2A-HAZEMTUNNEL10}
+; AppId must be a VALID GUID — it identifies the app for upgrades/uninstall forever.
+AppId={{EC754B65-815A-43B2-9F98-D4528927DAF0}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
